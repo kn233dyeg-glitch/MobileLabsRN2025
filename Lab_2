@@ -1,0 +1,186 @@
+import React, { createContext, useContext, useState } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
+import { FlatList, Image, Switch, Text, TouchableOpacity, View, StatusBar } from 'react-native';
+import styled, { ThemeProvider } from 'styled-components/native';
+
+// --- ТЕМИ ---
+// Змінюємо естетику на більш контрастну та сучасну (Neon/Cyberpunk vibes)
+const darkTheme = {
+  background: '#0B0E11', // Глибокий чорний
+  card: '#151921',       // Графітовий
+  textPrimary: '#FFFFFF',
+  textSecondary: '#9BA3AF',
+  accent: '#00D1FF',     // Неоновий блакитний
+  success: '#00FF66',    // Неоновий зелений
+};
+
+const ThemeContext = createContext({});
+
+const ThemeProviderCustom = ({ children }) => {
+  const [isDark, setIsDark] = useState(true);
+  const theme = darkTheme; // Можна додати lightTheme за аналогією
+
+  return (
+    <ThemeContext.Provider value={{ isDark, setIsDark, theme }}>
+      <ThemeProvider theme={theme}>{children}</ThemeProvider>
+    </ThemeContext.Provider>
+  );
+};
+
+const useTheme = () => useContext(ThemeContext);
+
+// --- СТИЛІЗОВАНІ КОМПОНЕНТИ (Common) ---
+const Container = styled.View`
+  flex: 1;
+  background-color: ${props => props.theme.background};
+  padding: 10px;
+`;
+
+const SectionTitle = styled.Text`
+  font-size: 24px;
+  font-weight: 800;
+  color: ${props => props.theme.textPrimary};
+  margin: 15px 5px;
+  letter-spacing: 0.5px;
+`;
+
+const StyledCard = styled.View`
+  background-color: ${props => props.theme.card};
+  border-radius: 16px;
+  margin-bottom: 15px;
+  overflow: hidden;
+  border-width: 1px;
+  border-color: #232931;
+`;
+
+const Badge = styled.View`
+  background-color: ${props => props.theme.accent};
+  padding: 4px 10px;
+  border-radius: 8px;
+  align-self: flex-start;
+  margin-top: 8px;
+`;
+
+// --- ЕКРАНИ ---
+
+const StoreScreen = () => {
+  const games = [
+    { id: '1', title: 'Cyberpunk 2077', image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg', price: '$29.99' },
+    { id: '2', title: 'Elden Ring', image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg', price: '$39.99' },
+    { id: '3', title: 'Baldur’s Gate 3', image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1086940/header.jpg', price: '$44.00' }
+  ];
+
+  return (
+    <Container>
+      <SectionTitle>Discovery</SectionTitle>
+      <FlatList
+        data={games}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) => (
+          <StyledCard>
+            <Image source={{ uri: item.image }} style={{ width: '100%', height: 180 }} />
+            <View style={{ padding: 15 }}>
+              <Text style={{ color: 'white', fontSize: 18, fontWeight: '700' }}>{item.title}</Text>
+              <Badge><Text style={{ color: 'black', fontWeight: 'bold' }}>{item.price}</Text></Badge>
+            </View>
+          </StyledCard>
+        )}
+      />
+    </Container>
+  );
+};
+
+const ChatScreen = () => {
+  const chats = [
+    { id: '1', name: 'Valve Dev', status: 'In-game: Half-Life 3', online: true },
+    { id: '2', name: 'SteamUser101', status: 'Away', online: false },
+    { id: '3', name: 'Co-op Buddy', status: 'Online', online: true }
+  ];
+
+  return (
+    <Container>
+      <SectionTitle>Friends</SectionTitle>
+      <FlatList
+        data={chats}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) => (
+          <StyledCard style={{ flexDirection: 'row', alignItems: 'center', padding: 12 }}>
+            <View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: '#232931', borderWidth: 2, borderColor: item.online ? '#00FF66' : '#9BA3AF' }} />
+            <View style={{ marginLeft: 15 }}>
+              <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16 }}>{item.name}</Text>
+              <Text style={{ color: '#9BA3AF', fontSize: 13 }}>{item.status}</Text>
+            </View>
+          </StyledCard>
+        )}
+      />
+    </Container>
+  );
+};
+
+const ProfileScreen = () => {
+  const { theme } = useTheme();
+  return (
+    <Container style={{ alignItems: 'center', paddingTop: 40 }}>
+      <View style={{ width: 120, height: 120, borderRadius: 60, borderWidth: 3, borderColor: theme.accent, padding: 5 }}>
+        <Image source={{ uri: 'https://i.pravatar.cc/150?img=11' }} style={{ flex: 1, borderRadius: 60 }} />
+      </View>
+      <Text style={{ color: 'white', fontSize: 28, fontWeight: 'bold', marginTop: 15 }}>Kijo</Text>
+      <Text style={{ color: theme.accent }}>Level 15 • Ukraine</Text>
+      
+      <TouchableOpacity style={{ backgroundColor: theme.accent, padding: 15, borderRadius: 12, width: '90%', marginTop: 30, alignItems: 'center' }}>
+        <Text style={{ color: 'black', fontWeight: 'bold' }}>Edit Profile</Text>
+      </TouchableOpacity>
+
+      <StyledCard style={{ width: '90%', marginTop: 20, padding: 20 }}>
+        <Text style={{ color: theme.textSecondary }}>Bio:</Text>
+        <Text style={{ color: 'white', marginTop: 5 }}>Gamer, developer, and Dota 2 lover.</Text>
+      </StyledCard>
+    </Container>
+  );
+};
+
+// --- NAVIGATION ---
+const Tab = createBottomTabNavigator();
+
+function AppInner() {
+  const { theme } = useTheme();
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarStyle: { 
+          backgroundColor: theme.background, 
+          borderTopColor: '#232931',
+          height: 65,
+          paddingBottom: 10
+        },
+        tabBarActiveTintColor: theme.accent,
+        tabBarInactiveTintColor: '#4B5563',
+        tabBarIcon: ({ color, size }) => {
+          let iconName;
+          if (route.name === 'Store') iconName = 'grid';
+          else if (route.name === 'Chat') iconName = 'chatbubble-ellipses';
+          else if (route.name === 'Profile') iconName = 'person';
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+      })}
+    >
+      <Tab.Screen name="Store" component={StoreScreen} />
+      <Tab.Screen name="Chat" component={ChatScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+    </Tab.Navigator>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProviderCustom>
+      <NavigationContainer>
+        <StatusBar barStyle="light-content" />
+        <AppInner />
+      </NavigationContainer>
+    </ThemeProviderCustom>
+  );
+}

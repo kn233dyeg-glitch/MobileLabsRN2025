@@ -1,0 +1,207 @@
+import React from 'react';
+import { 
+  Text, 
+  View, 
+  StyleSheet, 
+  FlatList, 
+  Image, 
+  TouchableOpacity, 
+  SafeAreaView, 
+  StatusBar 
+} from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
+
+// --- Спільний компонент Шапки (Header) ---
+const CustomHeader = () => (
+  <View style={styles.header}>
+    <Image 
+      source={{ uri: 'https://ztu.edu.ua/img/logo_ukr.png' }} 
+      style={styles.logo} 
+      resizeMode="contain"
+    />
+    <Text style={styles.headerTitle}>FirstMobileApp</Text>
+  </View>
+);
+
+// --- Спільний компонент Футера ---
+const CustomFooter = () => (
+  <View style={styles.footer}>
+    <Text style={styles.footerText}>Дзьома Євгеній Геннадійович, КН-23-3</Text>
+  </View>
+);
+
+// --- 1. Екран Новин (Головна) ---
+const HomeScreen = () => {
+  const newsData = Array(8).fill({
+    title: 'Заголовок новини',
+    date: 'Дата новини',
+    text: 'Короткий текст новини',
+  });
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <CustomHeader />
+      <Text style={styles.sectionTitle}>Новини</Text>
+      <FlatList
+        data={newsData}
+        keyExtractor={(_, index) => index.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.newsItem}>
+            <View style={styles.newsImagePlaceholder}>
+              <Ionicons name="image-outline" size={30} color="#ccc" />
+            </View>
+            <View style={styles.newsTextContainer}>
+              <Text style={styles.newsTitle}>{item.title}</Text>
+              <Text style={styles.newsDate}>{item.date}</Text>
+              <Text style={styles.newsDescription}>{item.text}</Text>
+            </View>
+          </View>
+        )}
+      />
+      <CustomFooter />
+    </SafeAreaView>
+  );
+};
+
+// --- 2. Екран Фотогалереї ---
+const GalleryScreen = () => {
+  const photos = Array(12).fill({});
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <CustomHeader />
+      <FlatList
+        data={photos}
+        numColumns={2}
+        keyExtractor={(_, index) => index.toString()}
+        contentContainerStyle={styles.galleryList}
+        renderItem={() => (
+          <View style={styles.galleryItem}>
+             <View style={styles.photoPlaceholder} />
+          </View>
+        )}
+      />
+      <CustomFooter />
+    </SafeAreaView>
+  );
+};
+
+// --- 3. Екран Профілю ---
+const ProfileScreen = () => {
+  return (
+    <SafeAreaView style={styles.container}>
+      <CustomHeader />
+      <View style={styles.profileContent}>
+        <Text style={styles.sectionTitle}>Профіль користувача</Text>
+        
+        <View style={styles.avatarContainer}>
+          <Ionicons name="person-circle-outline" size={120} color="#007AFF" />
+        </View>
+
+        <View style={styles.infoBox}>
+          <Text style={styles.label}>Прізвище та ім'я:</Text>
+          <Text style={styles.value}>Ваше Прізвище Ім'я</Text>
+        </View>
+
+        <View style={styles.infoBox}>
+          <Text style={styles.label}>Група:</Text>
+          <Text style={styles.value}>Ваша Група</Text>
+        </View>
+
+        <View style={styles.infoBox}>
+          <Text style={styles.label}>Університет:</Text>
+          <Text style={styles.value}>Житомирська політехніка</Text>
+        </View>
+
+        <TouchableOpacity style={styles.editButton}>
+          <Text style={styles.editButtonText}>Редагувати</Text>
+        </TouchableOpacity>
+      </View>
+      <CustomFooter />
+    </SafeAreaView>
+  );
+};
+
+// --- Навігація ---
+const Tab = createBottomTabNavigator();
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <StatusBar barStyle="dark-content" />
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => {
+            let iconName;
+            if (route.name === 'Головна') iconName = 'home';
+            else if (route.name === 'Фотогалерея') iconName = 'images';
+            else iconName = 'person';
+            return <Ionicons name={iconName} size={size} color={color} />;
+          },
+          tabBarActiveTintColor: '#007AFF',
+          tabBarInactiveTintColor: 'gray',
+        })}
+      >
+        <Tab.Screen name="Головна" component={HomeScreen} />
+        <Tab.Screen name="Фотогалерея" component={GalleryScreen} />
+        <Tab.Screen name="Профіль" component={ProfileScreen} />
+      </Tab.Navigator>
+    </NavigationContainer>
+  );
+}
+
+// --- Стилі ---
+const styles = StyleSheet.create({
+  container: { 
+    flex: 1, 
+    backgroundColor: '#fff',
+    paddingTop: StatusBar.currentHeight 
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    backgroundColor: '#fff',
+  },
+  logo: { width: 35, height: 35, marginRight: 10 },
+  headerTitle: { fontSize: 18, fontWeight: 'bold', flex: 1, textAlign: 'center', marginRight: 35 },
+  sectionTitle: { fontSize: 22, textAlign: 'center', marginVertical: 15, fontWeight: '500' },
+  
+  // Новини
+  newsItem: { flexDirection: 'row', padding: 12, borderBottomWidth: 0.5, borderColor: '#eee' },
+  newsImagePlaceholder: { width: 70, height: 70, backgroundColor: '#f5f5f5', justifyContent: 'center', alignItems: 'center', borderRadius: 4 },
+  newsTextContainer: { marginLeft: 12, flex: 1 },
+  newsTitle: { fontWeight: 'bold', fontSize: 15 },
+  newsDate: { color: '#999', fontSize: 11, marginVertical: 2 },
+  newsDescription: { fontSize: 13, color: '#444' },
+
+  // Галерея
+  galleryList: { padding: 5 },
+  galleryItem: { flex: 1, padding: 8 },
+  photoPlaceholder: { 
+    aspectRatio: 1, 
+    backgroundColor: '#fff', 
+    borderWidth: 1, 
+    borderColor: '#ccc', 
+    borderRadius: 10 
+  },
+
+  // Профіль
+  profileContent: { flex: 1, padding: 20, alignItems: 'center' },
+  avatarContainer: { marginBottom: 20 },
+  infoBox: { width: '100%', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
+  label: { fontSize: 12, color: '#888' },
+  value: { fontSize: 16, fontWeight: '500', marginTop: 2 },
+  editButton: { marginTop: 30, backgroundColor: '#007AFF', paddingVertical: 12, paddingHorizontal: 40, borderRadius: 25 },
+  editButtonText: { color: '#fff', fontWeight: 'bold' },
+
+  // Футер
+  footer: { borderTopWidth: 1, borderTopColor: '#eee', padding: 8, backgroundColor: '#f9f9f9' },
+  footerText: { textAlign: 'center', fontSize: 11, color: '#777' }
+});
